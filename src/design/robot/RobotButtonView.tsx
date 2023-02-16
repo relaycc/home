@@ -21,14 +21,6 @@ const secondary = css`
   //border: 5px solid;
   //border-image: linear-gradient(83.91deg, #4236c7 0%, #9747ff 100%);
   background: #0c063c;
-
-  :hover {
-    background-color: #efeefb;
-  }
-
-  :active {
-    background-color: ${(p) => p.theme.colors.primary["100"]};
-  }
 `;
 
 const small = css`

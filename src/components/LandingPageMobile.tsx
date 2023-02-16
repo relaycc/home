@@ -15,10 +15,14 @@ import {
 } from "@/design/robot/RobotButtonView";
 import * as MenuMobile from "@/design/relay/MenuMobile";
 import { RobotHeadMobile } from "@/design/robot/RobotHeadMobile";
+import MobileMenuComponent from "@/components/MobileMenuComponent";
+import { motion } from "framer-motion";
 import { ArrowDownWhite } from "@/design/robot/ArrowDownWhite";
+import { ArrowUpWhite } from "@/design/robot/ArrowUpWhite";
 
 const Root = styled.div`
-  @media (min-width: 551px) {
+  font-family: "Satoshi-Regular";
+  @media (min-width: 651px) {
     display: none;
   }
 `;
@@ -33,8 +37,10 @@ const RelayLanding: FunctionComponent = () => {
   const toggleShowMenu = useCallback(() => {
     setShowMenu(!showMenu);
   }, [showMenu]);
+  const toggleShowMore = useCallback(() => {
+    setShowMore(!showMore);
+  }, [showMore]);
   const robotCards = usePriorityRobotCards(true);
-
   return (
     <Root>
       <Head>
@@ -70,26 +76,32 @@ const RelayLanding: FunctionComponent = () => {
             <RobotTitle>Click your favorite dApp to try Robot!</RobotTitle>
             {/*<Ellipse />*/}
           </MobileTitelWrapper>
-          <ShowMoreButton>
-            Show More
-            <ArrowDownWhite />
-          </ShowMoreButton>
-
-          <CardGrid>
-            {robotCards.map((robot, i) => (
-              <Card.Card
-                key={robot.peerAddress}
-                handleClick={() => {
-                  console.log("Show bot");
-                }}
-                icon={<robot.icon />}
-                initialBgColor={robot.initialBgColor}
-                animateBgColor={robot.animateBgColor}
-                isMobile={true}
-              />
-            ))}
-          </CardGrid>
+          <Wrapper>
+            <CardGrid height={showMore ? "100%" : "15rem"}>
+              {robotCards.map((robot, i) => (
+                <Card.Card
+                  key={robot.peerAddress}
+                  handleClick={() => {
+                    console.log(robot);
+                  }}
+                  icon={<robot.icon width={82} />}
+                  initialBgColor={robot.initialBgColor}
+                  animateBgColor={robot.animateBgColor}
+                  isMobile={true}
+                />
+              ))}
+            </CardGrid>
+            <ShowMoreWrapper showMore={showMore}>
+              <ShowMoreButton onClick={toggleShowMore}>
+                {showMore ? "Show Less" : "Show More"}
+                {showMore ? <ArrowUpWhite /> : <ArrowDownWhite />}
+              </ShowMoreButton>
+            </ShowMoreWrapper>
+          </Wrapper>
         </ContentColumn>
+
+        {showMenu && <MobileMenuComponent setShowMenu={setShowMenu} />}
+
         <Footer
           onClickReceiver={() => {}}
           onClickRecon={() => {}}
@@ -99,7 +111,13 @@ const RelayLanding: FunctionComponent = () => {
     </Root>
   );
 };
-
+const Wrapper = styled.div`
+  max-height: fit-content;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
 const FullWidthPage = styled.main`
   display: flex;
   flex-direction: column;
@@ -107,7 +125,6 @@ const FullWidthPage = styled.main`
   width: 100vw;
   min-height: 100vh;
   background: #0c063c;
-  //background: deeppink;
 `;
 const ContentColumn = styled.div`
   display: flex;
@@ -117,15 +134,8 @@ const ContentColumn = styled.div`
   max-width: calc(252px * 5 + 64px);
   flex-grow: 1;
 `;
-const CommunityRoot = styled.div`
-  position: relative;
-`;
-const CommunityCard = styled(Nav.DropdownCard)`
-  position: absolute;
-  left: -17px;
-  z-index: 1;
-`;
-const CardGrid = styled.div`
+
+const CardGrid = styled(motion.div)<{ height?: string }>`
   display: grid;
   grid-auto-flow: row;
   justify-content: center;
@@ -135,7 +145,7 @@ const CardGrid = styled.div`
   padding: 0 1rem;
   grid-gap: 1rem;
   grid-template-columns: repeat(2, 160px);
-  max-height: 15rem;
+  max-height: ${(p) => p.height};
   overflow: hidden;
   background: radial-gradient(
     100% 100% at 50% 0%,
@@ -143,16 +153,31 @@ const CardGrid = styled.div`
     #0c063c 100%
   );
 `;
+const ShowMoreWrapper = styled.div<{ showMore: boolean }>`
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column;
+  bottom: ${(p) => (p.showMore ? "" : "4.5rem")};
+  left: 0px;
+  margin-top: ${(p) => (p.showMore ? "1rem" : "")};
+
+  height: ${(p) => (p.showMore ? "fit-conent" : "5rem")};
+  background: ${(p) =>
+    p.showMore
+      ? ""
+      : "radial-gradient(100% 100% at 50% 0%,rgba(12, 6, 60, 0) 0%,#0c063c 100%)"};
+`;
 const ShowMoreButton = styled.div`
   position: relative;
   display: flex;
-  top: 16rem;
   height: 40px;
   width: 136px;
-  left: 0px;
   border-radius: 8px;
   padding: 10px 16px 10px 16px;
-  z-index: 99;
+  z-index: 1;
   border: 1px solid #4236c7;
   background: #4236c7;
   align-items: center;
@@ -167,14 +192,12 @@ const MobileTitelWrapper = styled.div`
   width: max-content;
 `;
 const TitleWhite = styled.div`
-  font-family: "Satoshi";
   font-style: normal;
   font-weight: 900;
   font-size: 34px;
   color: #ffffff;
 `;
 const TitleGradient = styled.div`
-  font-family: "Satoshi";
   font-style: normal;
   font-weight: 900;
   font-size: 34px;
@@ -195,6 +218,8 @@ const SubTitle = styled.div`
   font-style: normal;
   font-weight: 500;
   font-size: 14px;
+  //margin-top: 1rem;
+
   color: #dad8f6;
 `;
 const RobotTitle = styled.div`
@@ -202,6 +227,7 @@ const RobotTitle = styled.div`
   font-weight: 500;
   font-size: 14px;
   color: #ffffff;
+  //margin-bottom: 1rem;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -214,6 +240,8 @@ const ButtonWrapper = styled.div`
   padding: 2px;
   background: linear-gradient(83.91deg, #4236c7 0%, #9747ff 100%);
   border-radius: 8.4px;
+  margin-top: 3.25rem;
+  margin-bottom: 2rem;
 `;
 
 const ImageWrapper = styled.div`

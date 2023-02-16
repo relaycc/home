@@ -1,10 +1,12 @@
-import React, { FunctionComponent, Ref, useEffect, useRef } from "react";
+import React, { FunctionComponent, useEffect } from "react";
 import * as MenuMobile from "@/design/relay/MenuMobile";
 import Image from "next/image";
 import styled from "styled-components";
 import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
 import { ConnectButton } from "@/components/ConnectButton";
+import { RobotLogo } from "@/design/robot/RobotLogo";
+import { ButtonSecondaryMd } from "@/design/robot/RobotButtonView";
 
 const MobileMenuComponent: FunctionComponent<{
   setShowMenu: (value: boolean) => void;
@@ -28,26 +30,40 @@ const MobileMenuComponent: FunctionComponent<{
         ref={ref}
       >
         <FlexRowSpaceBetween style={{ padding: "0.5rem" }}>
-          <MenuMobile.Logo />
+          <RobotLogo />
           <Image
             onClick={() => {
               setShowMenu(false);
             }}
-            src="/exit.svg"
+            src="/exitWhite.svg"
             width={24}
             height={24}
             alt="close"
           />
         </FlexRowSpaceBetween>
-        <MenuMobile.Products>Integrations</MenuMobile.Products>
-        <MenuMobile.ProductButton
-          as="a"
-          href="https://airtable.com/shrD6Xv70iq7WDwoj"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Join the Waitlist
-        </MenuMobile.ProductButton>
+        <MenuMobile.ButtonWrapper>
+          <MenuMobile.ProductButton
+            as="a"
+            href=""
+            target="_blank"
+            rel="noreferrer"
+          >
+            Try Robot
+          </MenuMobile.ProductButton>
+          <SecondaryWrapper>
+            <ButtonSecondaryMd
+              as="a"
+              href="https://airtable.com/shrD6Xv70iq7WDwoj"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: "#1D2939",
+              }}
+            >
+              Join the Waitlist
+            </ButtonSecondaryMd>
+          </SecondaryWrapper>
+        </MenuMobile.ButtonWrapper>
         <MenuMobile.Products>Community</MenuMobile.Products>
         <MenuMobile.SocialItem
           as="a"
@@ -99,6 +115,12 @@ const MobileMenuComponent: FunctionComponent<{
 const FlexRowSpaceBetween = styled.div`
   display: flex;
   justify-content: space-between;
+  width: 100%;
+`;
+const SecondaryWrapper = styled.div`
+  padding: 2px;
+  background: linear-gradient(83.91deg, #4236c7 0%, #9747ff 100%);
+  border-radius: 8.4px;
   width: 100%;
 `;
 export default MobileMenuComponent;

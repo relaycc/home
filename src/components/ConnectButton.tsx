@@ -1,20 +1,20 @@
-import { FunctionComponent, useRef, useEffect, useState } from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
 import { truncateAddress } from "@/lib/truncateAddress";
 import { Avatar } from "./Avatar";
 import { textMdSemiBold } from "@/design/typography";
-import { ButtonPrimary } from "@/design/relay/Nav";
-import { DropdownItem } from "@/design/relay/DropdownItem";
 import { DropdownCard } from "@/design/relay/Nav";
+import { DropdownItem } from "@/design/relay/DropdownItem";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { LogoutIcon } from "@/design/relay/LogoutIcon";
 import { CopyIcon } from "@/design/relay/CopyIcon";
 import { useRelayId } from "@/hooks/useRelayId";
 import { truncateEns } from "@/lib/truncateEns";
+import { ButtonPrimaryMd } from "@/design/robot/RobotButtonView";
 
-const Button = styled(ButtonPrimary)<{ minWidth: string }>`
+const Button = styled(ButtonPrimaryMd)<{ minWidth: string }>`
   min-width: ${(props) => props.minWidth};
   ${textMdSemiBold}
 `;

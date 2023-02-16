@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactNode, useState } from "react";
+import React, { FunctionComponent, ReactNode, useState } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 
@@ -9,7 +9,7 @@ const Root = styled(motion.div)<{ isMobile?: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: ${(p) => (p.isMobile ? "156px" : "252px")};
+  min-width: ${(p) => (p.isMobile ? "156px" : "330px")};
   height: ${(p) => (p.isMobile ? "152px" : "330px")};
   cursor: pointer;
   background-color: grey;
@@ -35,6 +35,9 @@ export const Card: FunctionComponent<CardProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const copiedIcon = React.cloneElement(icon, [
+    { height: "82px", width: "82px" },
+  ]);
   return (
     <Root
       onClick={handleClick}
@@ -51,14 +54,12 @@ export const Card: FunctionComponent<CardProps> = ({
       isMobile={isMobile}
     >
       {icon && icon}
+      {/*<Icon />*/}
     </Root>
   );
 };
 
-const RobotIcon = styled(motion.div)`
-  position: absolute;
-  font-size: 2rem;
-  line-height: 2rem;
-  top: 1rem;
-  right: 1rem;
+const Wrapper = styled.div`
+  height: 81px;
+  width: 81px;
 `;

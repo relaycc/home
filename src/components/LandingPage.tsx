@@ -20,7 +20,7 @@ import styled from "styled-components";
 import { IconGithub } from "@/design/relay/IconGithub";
 
 const Root = styled.div`
-  @media (max-width: 550px) {
+  @media (max-width: 650px) {
     display: none;
   }
 `;
@@ -220,7 +220,7 @@ const CardGrid = styled.div`
   margin: 4rem 5.5rem;
   @media screen and (min-width: 400px) {
     grid-gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 250px));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 350px));
     padding: 0 2rem;
   }
 
@@ -242,14 +242,12 @@ const MobileTitelWrapper = styled.div`
   width: max-content;
 `;
 const TitleWhite = styled.div`
-  font-family: "Satoshi";
   font-style: normal;
   font-weight: 900;
   font-size: 72px;
   color: #ffffff;
 `;
 const TitleGradient = styled.div`
-  font-family: "Satoshi";
   font-style: normal;
   font-weight: 900;
   font-size: 72px;
