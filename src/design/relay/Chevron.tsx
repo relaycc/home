@@ -89,6 +89,6 @@ export const ChevronDownActive = styled((props: ComponentProps<"svg">) => (
 `;
 export const ChevronDownColored = styled(ChevronDownActive)`
   path {
-    stroke: ${(p) => p.theme.colors.primary["500"]};
+    stroke: ${(p) => p.theme.colors.gray["0"]};
   }
 `;

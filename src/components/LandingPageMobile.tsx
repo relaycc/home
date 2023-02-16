@@ -2,9 +2,8 @@ import { FunctionComponent } from "preact/compat";
 import Head from "next/head";
 import styled from "styled-components";
 import * as Nav from "@/design/relay/Nav";
-import { NextRouter, useRouter } from "next/router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { DropdownItem } from "@/design/relay/DropdownItem";
+import { useRouter } from "next/router";
+import { useCallback, useState } from "react";
 import { RobotTitleLogo } from "@/design/robot/robotTitleLogo";
 import Footer from "@/design/relay/Footer";
 import { RobotLogo } from "@/design/robot/RobotLogo";
@@ -18,6 +17,11 @@ import * as MenuMobile from "@/design/relay/MenuMobile";
 import { RobotHeadMobile } from "@/design/robot/RobotHeadMobile";
 import { ArrowDownWhite } from "@/design/robot/ArrowDownWhite";
 
+const Root = styled.div`
+  @media (min-width: 551px) {
+    display: none;
+  }
+`;
 const RelayLanding: FunctionComponent = () => {
   const router = useRouter();
   const [showCommunity, setShowCommunity] = useState(false);
@@ -32,7 +36,7 @@ const RelayLanding: FunctionComponent = () => {
   const robotCards = usePriorityRobotCards(true);
 
   return (
-    <>
+    <Root>
       <Head>
         <title>Relay</title>
         <meta name="description" content="the Relay App" />
@@ -41,25 +45,6 @@ const RelayLanding: FunctionComponent = () => {
       </Head>
       <FullWidthPage>
         <ContentColumn>
-          {/*<Nav.RootDesktop>*/}
-          {/*  <RobotLogo />*/}
-          {/*  <RobotTitleLogo />*/}
-          {/*  {showCommunity ? (*/}
-          {/*    <CommunityDropdown*/}
-          {/*      toggleDropdown={toggleCommunity}*/}
-          {/*      router={router}*/}
-          {/*    />*/}
-          {/*  ) : (*/}
-          {/*    <Nav.NavLink onClick={toggleCommunity}>*/}
-          {/*      Community*/}
-          {/*      <Nav.ChevronDownActive />*/}
-          {/*    </Nav.NavLink>*/}
-          {/*  )}*/}
-
-          {/*  <Nav.LogoAndNameWrapper>*/}
-          {/*    <ConnectButton />*/}
-          {/*  </Nav.LogoAndNameWrapper>*/}
-          {/*</Nav.RootDesktop>*/}
           <Nav.RootMobile>
             <RobotLogo />
             <RobotTitleLogo />
@@ -111,73 +96,7 @@ const RelayLanding: FunctionComponent = () => {
           onClickRobot={() => {}}
         />
       </FullWidthPage>
-    </>
-  );
-};
-const CommunityDropdown: FunctionComponent<{
-  toggleDropdown: () => void;
-  router: NextRouter;
-}> = ({ toggleDropdown, router }) => {
-  const handleNav = useCallback(
-    (url: string) => {
-      router.push(url);
-    },
-    [router]
-  );
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        toggleDropdown();
-      }
-    };
-    document.addEventListener("click", handleClickOutside, true);
-    return () => {
-      document.removeEventListener("click", handleClickOutside, true);
-    };
-  }, [ref, toggleDropdown]);
-  // TODO Use handle nav with appropriate links
-  return (
-    <CommunityRoot ref={ref}>
-      <Nav.NavLink onClick={toggleDropdown}>
-        Community <Nav.ChevronDownColored />
-      </Nav.NavLink>
-      <CommunityCard>
-        <DropdownItem
-          as="a"
-          href="https://discord.gg/relaycc"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Discord
-        </DropdownItem>
-        <DropdownItem
-          as="a"
-          href="https://twitter.com/relay_eth"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Twitter
-        </DropdownItem>
-        <DropdownItem
-          as="a"
-          href="https://lenster.xyz/u/relay"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Lens
-        </DropdownItem>
-        <DropdownItem
-          as="a"
-          href="https://mirror.xyz/relaycc.eth"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Mirror
-        </DropdownItem>
-      </CommunityCard>
-    </CommunityRoot>
+    </Root>
   );
 };
 

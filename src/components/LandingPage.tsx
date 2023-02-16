@@ -1,24 +1,30 @@
 import { FunctionComponent } from "preact/compat";
-import Head from "next/head";
-import styled from "styled-components";
-import * as Nav from "@/design/relay/Nav";
-import { ConnectButton } from "@/components/ConnectButton";
 import { NextRouter, useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DropdownItem } from "@/design/relay/DropdownItem";
-import { RobotTitleLogo } from "@/design/robot/robotTitleLogo";
-import Footer from "@/design/relay/Footer";
-import { RobotLogo } from "@/design/robot/RobotLogo";
 import { usePriorityRobotCards } from "@/hooks/usePriorityRobotCards";
+import Head from "next/head";
+import * as Nav from "@/design/relay/Nav";
 import * as Card from "@/design/relay/Card";
+
+import { RobotLogo } from "@/design/robot/RobotLogo";
+import { RobotTitleLogo } from "@/design/robot/robotTitleLogo";
+import { ConnectButton } from "@/components/ConnectButton";
 import {
   ButtonPrimaryMd,
   ButtonSecondaryMd,
 } from "@/design/robot/RobotButtonView";
-import { RobotHead } from "@/design/robot/robotHead";
-import { Ellipse } from "@/design/robot/Ellipse";
+import { RobotHead } from "@/design/robot/RobotHead";
+import Footer from "@/design/relay/Footer";
+import { DropdownItem } from "@/design/relay/DropdownItem";
+import styled from "styled-components";
+import { IconGithub } from "@/design/relay/IconGithub";
 
-const RelayLanding: FunctionComponent = () => {
+const Root = styled.div`
+  @media (max-width: 550px) {
+    display: none;
+  }
+`;
+const LandingPage: FunctionComponent = () => {
   const router = useRouter();
   const [showCommunity, setShowCommunity] = useState(false);
   const toggleCommunity = useCallback(() => {
@@ -31,7 +37,7 @@ const RelayLanding: FunctionComponent = () => {
   const robotCards = usePriorityRobotCards();
 
   return (
-    <>
+    <Root>
       <Head>
         <title>Relay</title>
         <meta name="description" content="the Relay App" />
@@ -41,23 +47,31 @@ const RelayLanding: FunctionComponent = () => {
       <FullWidthPage>
         <ContentColumn>
           <Nav.RootDesktop>
-            <RobotLogo />
-            <RobotTitleLogo />
-            {showCommunity ? (
-              <CommunityDropdown
-                toggleDropdown={toggleCommunity}
-                router={router}
-              />
-            ) : (
-              <Nav.NavLink onClick={toggleCommunity}>
-                Community
-                <Nav.ChevronDownActive />
-              </Nav.NavLink>
-            )}
-
-            <Nav.LogoAndNameWrapper>
-              <ConnectButton />
-            </Nav.LogoAndNameWrapper>
+            <Nav.Left>
+              <RobotLogo />
+            </Nav.Left>
+            <Nav.Middle>
+              <RobotTitleLogo />
+            </Nav.Middle>
+            <Nav.Right>
+              <GitIconWrapper>
+                <IconGithub />
+              </GitIconWrapper>
+              {showCommunity ? (
+                <CommunityDropdown
+                  toggleDropdown={toggleCommunity}
+                  router={router}
+                />
+              ) : (
+                <Nav.NavLink onClick={toggleCommunity}>
+                  Community
+                  <Nav.ChevronDownColored />
+                </Nav.NavLink>
+              )}
+              <Nav.LogoAndNameWrapper>
+                <ConnectButton />
+              </Nav.LogoAndNameWrapper>
+            </Nav.Right>
           </Nav.RootDesktop>
 
           <MobileTitelWrapper>
@@ -76,6 +90,7 @@ const RelayLanding: FunctionComponent = () => {
             <RobotHead />
             {/*<Ellipse />*/}
           </MobileTitelWrapper>
+          <CardTitle>Click your favorite dApp to try Robot!</CardTitle>
           <CardGrid>
             {robotCards.map((robot, i) => (
               <Card.Card
@@ -96,7 +111,7 @@ const RelayLanding: FunctionComponent = () => {
           onClickRobot={() => {}}
         />
       </FullWidthPage>
-    </>
+    </Root>
   );
 };
 const CommunityDropdown: FunctionComponent<{
@@ -201,7 +216,8 @@ const CardGrid = styled.div`
   padding: 0 1rem;
   grid-template-columns: initial;
   grid-gap: 0.5rem;
-
+  //margin-top: 4rem;
+  margin: 4rem 5.5rem;
   @media screen and (min-width: 400px) {
     grid-gap: 1rem;
     grid-template-columns: repeat(auto-fill, minmax(250px, 250px));
@@ -212,7 +228,12 @@ const CardGrid = styled.div`
     padding: 0;
   }
 `;
-
+const CardTitle = styled.div`
+  font-weight: 700;
+  font-size: 48px;
+  color: white;
+  margin-top: 3rem;
+`;
 const MobileTitelWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -233,6 +254,7 @@ const TitleGradient = styled.div`
   font-weight: 900;
   font-size: 72px;
   padding: 0rem 1.5rem;
+  margin-top: 0.75rem;
 
   background-image: linear-gradient(
     89.58deg,
@@ -250,13 +272,15 @@ const SubTitle = styled.div`
   font-style: normal;
   font-weight: 500;
   font-size: 21px;
+  margin-top: 2rem;
   color: #dad8f6;
 `;
-
 const ButtonsWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   width: 19rem;
+  margin-top: 3.25rem;
+  margin-bottom: 2rem;
 `;
 const ButtonWrapper = styled.div`
   width: 9.25rem;
@@ -264,9 +288,7 @@ const ButtonWrapper = styled.div`
   background: linear-gradient(83.91deg, #4236c7 0%, #9747ff 100%);
   border-radius: 8.4px;
 `;
-
-const ImageWrapper = styled.div`
-  display: block;
+const GitIconWrapper = styled.div`
+  cursor: pointer;
 `;
-
-export default RelayLanding;
+export default LandingPage;
