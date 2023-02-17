@@ -13,13 +13,15 @@ import {
   ButtonPrimaryMd,
   ButtonSecondaryMd,
 } from "@/design/robot/RobotButtonView";
-import { RobotHead } from "@/design/robot/RobotHead";
 import Footer from "@/design/relay/Footer";
 import { DropdownItem } from "@/design/relay/DropdownItem";
 import styled from "styled-components";
 import { IconGithub } from "@/design/relay/IconGithub";
+import { RobotHead } from "@/design/robot/RobotHead";
 
 const Root = styled.div`
+  font-family: "Satoshi-Regular";
+
   @media (max-width: 650px) {
     display: none;
   }
@@ -79,18 +81,24 @@ const LandingPage: FunctionComponent = () => {
             <TitleGradient>User Onboarding</TitleGradient>
 
             <SubTitle>Train your own Ethereum-enabled ChatGPT bot</SubTitle>
-            <ButtonsWrapper>
-              <ButtonWrapper>
-                <ButtonSecondaryMd>Join Waitlist</ButtonSecondaryMd>
-              </ButtonWrapper>
-              <ButtonWrapper>
-                <ButtonPrimaryMd>Try Robot</ButtonPrimaryMd>
-              </ButtonWrapper>
-            </ButtonsWrapper>
-            <RobotHead />
-            {/*<Ellipse />*/}
+
+            <HeadWrapper>
+              <ButtonsWrapper>
+                <ButtonWrapper>
+                  <ButtonSecondaryMd>Join Waitlist</ButtonSecondaryMd>
+                </ButtonWrapper>
+                <ButtonWrapper>
+                  <ButtonPrimaryMd>Try Robot</ButtonPrimaryMd>
+                </ButtonWrapper>
+              </ButtonsWrapper>
+              <RobotHead />
+              <CardTitle>Try Robot</CardTitle>
+              <CardSubtitle>
+                Click on your favorite dApp to start a conversation
+              </CardSubtitle>
+            </HeadWrapper>
           </MobileTitelWrapper>
-          <CardTitle>Click your favorite dApp to try Robot!</CardTitle>
+
           <CardGrid>
             {robotCards.map((robot, i) => (
               <Card.Card
@@ -181,6 +189,18 @@ const CommunityDropdown: FunctionComponent<{
   );
 };
 
+const HeadWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 53rem;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/ellipse.svg");
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+`;
 const FullWidthPage = styled.main`
   display: flex;
   flex-direction: column;
@@ -233,6 +253,15 @@ const CardTitle = styled.div`
   font-size: 48px;
   color: white;
   margin-top: 3rem;
+  margin-bottom: 0.5rem;
+`;
+
+const CardSubtitle = styled.div`
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  color: ${(p) => p.theme.colors.gray["200"]};
+  margin-bottom: 1rem;
 `;
 const MobileTitelWrapper = styled.div`
   display: flex;
@@ -277,7 +306,7 @@ const ButtonsWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   width: 19rem;
-  margin-top: 3.25rem;
+  margin-top: 4.5rem;
   margin-bottom: 2rem;
 `;
 const ButtonWrapper = styled.div`

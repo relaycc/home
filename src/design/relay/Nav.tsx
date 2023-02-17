@@ -14,25 +14,15 @@ const Root = styled.div`
 `;
 
 export const RootDesktop = styled(Root)`
-  display: none;
+  display: flex;
   justify-content: center;
-
-  @media (min-width: 550px) {
-    display: flex;
-  }
+  margin-bottom: 6.5rem;
 `;
 
 export const RootMobile = styled(Root)`
   display: flex;
-  @media (min-width: 550px) {
-    display: none;
-  }
-  justify-content: space-between;
-`;
 
-export const InnerWrapper = styled.div`
-  display: flex;
-  gap: 24px;
+  justify-content: space-between;
 `;
 
 export const NavLink = styled.div`
@@ -48,10 +38,6 @@ export const NavLink = styled.div`
   cursor: pointer;
   color: #ffffff;
   margin: 0 1rem 0 1rem;
-
-  //@media (min-width: 950px) {
-  //  display: flex;
-  //}
 
   :hover {
     color: ${(p) => p.theme.colors.primary["500"]};

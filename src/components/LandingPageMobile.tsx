@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 import { RobotTitleLogo } from "@/design/robot/robotTitleLogo";
 import Footer from "@/design/relay/Footer";
-import { RobotLogo } from "@/design/robot/RobotLogo";
 import { usePriorityRobotCards } from "@/hooks/usePriorityRobotCards";
 import * as Card from "@/design/relay/Card";
 import {
@@ -19,6 +18,7 @@ import MobileMenuComponent from "@/components/MobileMenuComponent";
 import { motion } from "framer-motion";
 import { ArrowDownWhite } from "@/design/robot/ArrowDownWhite";
 import { ArrowUpWhite } from "@/design/robot/ArrowUpWhite";
+import { RobotLogoMobile } from "@/design/robot/RobotLogoMobile";
 
 const Root = styled.div`
   font-family: "Satoshi-Regular";
@@ -52,7 +52,7 @@ const RelayLanding: FunctionComponent = () => {
       <FullWidthPage>
         <ContentColumn>
           <Nav.RootMobile>
-            <RobotLogo />
+            <RobotLogoMobile />
             <RobotTitleLogo />
             <MenuMobile.MenuIcon onClick={toggleShowMenu} stroke={"#FFFFFF"} />
           </Nav.RootMobile>
@@ -73,7 +73,11 @@ const RelayLanding: FunctionComponent = () => {
             <ImageWrapper>
               <RobotHeadMobile />
             </ImageWrapper>
-            <RobotTitle>Click your favorite dApp to try Robot!</RobotTitle>
+            <CardTitle>Try Robot</CardTitle>
+            <RobotTitle>
+              Click on your favorite dApp to start a <br />
+              conversation
+            </RobotTitle>
             {/*<Ellipse />*/}
           </MobileTitelWrapper>
           <Wrapper>
@@ -165,10 +169,11 @@ const ShowMoreWrapper = styled.div<{ showMore: boolean }>`
   margin-top: ${(p) => (p.showMore ? "1rem" : "")};
 
   height: ${(p) => (p.showMore ? "fit-conent" : "5rem")};
+
   background: ${(p) =>
     p.showMore
       ? ""
-      : "radial-gradient(100% 100% at 50% 0%,rgba(12, 6, 60, 0) 0%,#0c063c 100%)"};
+      : "radial-gradient(87.66% 50% at 50% 0%, rgba(12, 6, 60, 0) 0%, #0C063C 100%);"};
 `;
 const ShowMoreButton = styled.div`
   position: relative;
@@ -178,8 +183,8 @@ const ShowMoreButton = styled.div`
   border-radius: 8px;
   padding: 10px 16px 10px 16px;
   z-index: 1;
-  border: 1px solid #4236c7;
-  background: #4236c7;
+  //border: 1px solid #4236c7;
+  //background: #4236c7;
   align-items: center;
   justify-content: space-between;
   color: white;
@@ -226,10 +231,16 @@ const RobotTitle = styled.div`
   font-style: normal;
   font-weight: 500;
   font-size: 14px;
-  color: #ffffff;
-  //margin-bottom: 1rem;
+  color: ${(p) => p.theme.colors.gray["200"]};
+  margin-bottom: 1rem;
+  text-align: center;
 `;
-
+const CardTitle = styled.div`
+  font-weight: 900;
+  font-size: 24px;
+  color: white;
+  margin-top: 3rem;
+`;
 const ButtonsWrapper = styled.div`
   display: flex;
   justify-content: space-between;

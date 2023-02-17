@@ -16,11 +16,11 @@ export const RobotHead = styled((props: ComponentProps<"svg">) => (
       y="0.453125"
       width="571.2"
       height="571.2"
-      fill="url(#pattern0)"
+      fill="url(#pattern1)"
     />
     <defs>
       <pattern
-        id="pattern0"
+        id="pattern1"
         patternContentUnits="objectBoundingBox"
         width="1"
         height="1"
