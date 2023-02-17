@@ -1,30 +1,30 @@
-import { FunctionComponent, useRef, useEffect, useState } from "react";
+import { FunctionComponent, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
 import { truncateAddress } from "@/lib/truncateAddress";
 import { Avatar } from "./Avatar";
 import { textMdSemiBold } from "@/design/typography";
-import { ButtonPrimary } from "@/design/relay/Nav";
-import { DropdownItem } from "@/design/relay/DropdownItem";
 import { DropdownCard } from "@/design/relay/Nav";
+import { DropdownItem } from "@/design/relay/DropdownItem";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 import { LogoutIcon } from "@/design/relay/LogoutIcon";
 import { CopyIcon } from "@/design/relay/CopyIcon";
 import { useRelayId } from "@/hooks/useRelayId";
 import { truncateEns } from "@/lib/truncateEns";
+import { ButtonPrimaryMd } from "@/design/robot/RobotButtonView";
 
-const Button = styled(ButtonPrimary)`
-  min-width: 207px;
+const Button = styled(ButtonPrimaryMd)<{ minWidth: string }>`
+  min-width: ${(props) => props.minWidth};
   ${textMdSemiBold}
 `;
 
-const NotConnected = () => {
+const NotConnected = ({ isMobile }: { isMobile: boolean }) => {
   const { openConnectModal } = useConnectModal();
 
   return (
     <Button
-      style={{ minWidth: "207px" }}
+      minWidth={isMobile ? "100%" : "207px"}
       onClick={() => {
         if (openConnectModal === undefined) {
           throw new Error(
@@ -41,11 +41,17 @@ const NotConnected = () => {
   );
 };
 
-const Connected = ({ onClick }: { onClick: () => unknown }) => {
+const Connected = ({
+  onClick,
+  isMobile,
+}: {
+  onClick: () => unknown;
+  isMobile: boolean;
+}) => {
   const { address } = useAccount();
   const relayId = useRelayId({ handle: address });
   return (
-    <Button style={{ minWidth: "207px" }} onClick={onClick}>
+    <Button minWidth={isMobile ? "100%" : "207px"} onClick={onClick}>
       <Avatar handle={address} size="sm" onClick={() => null} />
       {typeof relayId.ens.data === "string" && truncateEns(relayId.ens.data)}
       {typeof relayId.ens.data === "string" ||
@@ -56,7 +62,8 @@ const Connected = ({ onClick }: { onClick: () => unknown }) => {
 
 const Dropdown: FunctionComponent<{
   toggleDropdown: () => void;
-}> = ({ toggleDropdown }) => {
+  isMobile: boolean;
+}> = ({ toggleDropdown, isMobile }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { address } = useAccount();
   const { disconnectAsync } = useDisconnect();
@@ -76,10 +83,10 @@ const Dropdown: FunctionComponent<{
   }, [ref, toggleDropdown]);
 
   return (
-    <WalletRoot ref={ref}>
-      <Connected onClick={toggleDropdown} />
+    <WalletRoot ref={ref} isMobile={isMobile}>
+      <Connected onClick={toggleDropdown} isMobile={isMobile} />
       {}
-      <WalletCard>
+      <WalletCard isMobile={isMobile}>
         <DropdownItem
           onClick={() => {
             setCopied(address || "");
@@ -110,8 +117,9 @@ const Dropdown: FunctionComponent<{
   );
 };
 
-const WalletRoot = styled.div`
+const WalletRoot = styled.div<{ isMobile: boolean }>`
   position: relative;
+  width: ${(props) => (props.isMobile ? "100%" : "")};
 
   ${DropdownItem}:hover > ${LogoutIcon} {
     stroke: ${(p) => p.theme.colors.primary["500"]};
@@ -122,13 +130,17 @@ const WalletRoot = styled.div`
   }
 `;
 
-const WalletCard = styled(DropdownCard)`
+const WalletCard = styled(DropdownCard)<{ isMobile: boolean }>`
   position: absolute;
+  top: ${(props) => (props.isMobile ? "-105px" : "")};
+
   z-index: 1;
-  width: 207px;
+  width: ${(props) => (props.isMobile ? "100%" : "")};
 `;
 
-export const ConnectButton = () => {
+export const ConnectButton: FunctionComponent<{ isMobile?: boolean }> = ({
+  isMobile,
+}) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const { isConnected } = useAccount();
 
@@ -139,12 +151,22 @@ export const ConnectButton = () => {
   }, [isConnected, setShowDropdown]);
 
   if (!isConnected) {
-    return <NotConnected />;
+    return <NotConnected isMobile={!!isMobile} />;
   } else {
     if (!showDropdown) {
-      return <Connected onClick={() => setShowDropdown(true)} />;
+      return (
+        <Connected
+          onClick={() => setShowDropdown(true)}
+          isMobile={!!isMobile}
+        />
+      );
     } else {
-      return <Dropdown toggleDropdown={() => setShowDropdown(false)} />;
+      return (
+        <Dropdown
+          toggleDropdown={() => setShowDropdown(false)}
+          isMobile={!!isMobile}
+        />
+      );
     }
   }
 };

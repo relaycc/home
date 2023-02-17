@@ -16,6 +16,28 @@ export const CATEGORIES = [
 
 export type ProjectCategory = (typeof CATEGORIES)[number];
 
+export const CATEGORY_DISPLAY = {
+  general: "General",
+  new: "New",
+  venture: "Venture",
+  lens: "Lens",
+  identity: "Identity",
+  events: "Events",
+  music: "Music",
+  impactdao: "Impact DAO",
+  defi: "DeFi",
+  dao: "DAO",
+  zk: "ZK",
+  daotool: "DAO Tool",
+  infrastructure: "Infrastructure",
+} as const;
+
+export const categoryToDisplay = (
+  category: ProjectCategory
+): (typeof CATEGORY_DISPLAY)[ProjectCategory] => {
+  return CATEGORY_DISPLAY[category];
+};
+
 export const isProjectCategory = (obj: unknown): obj is ProjectCategory => {
   if (typeof obj !== "string") {
     return false;

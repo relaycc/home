@@ -1,4 +1,11 @@
-import React, { FunctionComponent, useMemo, useState } from "react";
+import React, {
+  FunctionComponent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useConnectedWallet } from "@/hooks/useConnectedWallet";
 import { AnimatePresence } from "framer-motion";
 import { EthAddress } from "@relaycc/xmtp-hooks";
@@ -19,6 +26,9 @@ import {
   textSmallRegular,
 } from "@/design/typography";
 import { useXmtpClient } from "@relaycc/xmtp-hooks";
+import { useStore } from "zustand";
+import { shallow } from "zustand/shallow";
+import { useZustandStore } from "@/hooks/useZustandStore";
 
 const SearchWrapper = styled.div`
   padding: 0.5rem 1rem;
@@ -68,6 +78,8 @@ export const MessagesPage: FunctionComponent<IMessagesPageProps> = () => {
   const { acceptedConversations, acceptedLoading } = useReadWriteValue({
     clientAddress: address as EthAddress,
   });
+  const messageScroll = useZustandStore((state) => state.messageScroll);
+  const updateScroll = useZustandStore((state) => state.updateMessageScroll);
 
   const filteredConversations = useMemo(() => {
     if (!searchInput) {
@@ -80,7 +92,22 @@ export const MessagesPage: FunctionComponent<IMessagesPageProps> = () => {
       });
     }
   }, [acceptedConversations, searchInput]);
-
+  const handleScroll: React.UIEventHandler<HTMLOListElement> = useCallback(
+    (e) => {
+      updateScroll(e.currentTarget.scrollTop);
+    },
+    []
+  );
+  const conversationListRef = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    if (!conversationListRef || !conversationListRef.current) {
+      return;
+    }
+    conversationListRef &&
+      conversationListRef.current.scrollTo({
+        top: messageScroll,
+      });
+  }, []);
   return (
     <>
       <HomeHeader.Root>
@@ -109,7 +136,10 @@ export const MessagesPage: FunctionComponent<IMessagesPageProps> = () => {
           }}
         />
       </SearchWrapper>
-      <ConversationList>
+      <ConversationList
+        onScrollCapture={handleScroll}
+        ref={conversationListRef}
+      >
         {(() => {
           if (acceptedLoading) {
             return (
@@ -193,6 +223,6 @@ const NoResultSubtitle = styled.div`
 
 const CreateNew = styled.span`
   cursor: pointer;
-  ${textSmallBold}
+  ${textSmallBold};
   color: ${(p) => p.theme.colors.primary["500"]};
 `;

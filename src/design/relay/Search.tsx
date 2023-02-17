@@ -9,6 +9,7 @@ const Root = styled.div<{ isError?: boolean }>`
   align-items: center;
   width: 100%;
   max-width: 700px;
+  margin: 0 3rem;
   min-height: 40px;
   max-height: 40px;
   padding: 8px;

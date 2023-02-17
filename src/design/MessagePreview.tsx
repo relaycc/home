@@ -51,10 +51,10 @@ export const NameAndIcons = styled.div`
 export const MessageDetails = styled.div`
   ${textSmallRegular};
   color: ${receiverTheme.colors.gray["400"]};
-  display: flex;
+  display: block;
   width: 100%;
 
-  overflow: clip;
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   max-width: 15rem;

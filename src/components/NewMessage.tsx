@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import * as MsgBox from "@/design/MsgBox";
 import * as NewMsgInput from "@/design/NewMsgInput";
@@ -6,12 +6,18 @@ import * as NewMessageHeader from "@/design/NewMessageHeader";
 import { textMdSemiBold, textSmallRegular } from "@/design/typography";
 import { receiverTheme } from "@/design/receiverTheme";
 import { motion } from "framer-motion";
-import { EthAddress, isEthAddress, useSendMessage } from "@relaycc/xmtp-hooks";
+import {
+  EthAddress,
+  isEthAddress,
+  useFetchPeerOnNetwork,
+  useSendMessage,
+} from "@relaycc/xmtp-hooks";
 import { isEnsName } from "@/lib/isEnsName";
 import { fetchAddressFromEns } from "@/hooks/useAddressFromEns";
 import { useGoToDm } from "@/hooks/useReceiverWindow";
 import { Avatar } from "./Avatar";
 import { truncateAddress } from "@/lib/truncateAddress";
+import { useReadWriteValue } from "@/hooks/useReadWriteValue";
 
 const Root = styled(motion.div)`
   display: flex;
@@ -108,12 +114,10 @@ type States =
   | {
       id: "input has address";
       peerAddress: string;
+      addressIsOnNetwork: boolean | null;
     }
   | {
       id: "input does not have an address";
-    }
-  | {
-      id: "address is on network";
     };
 
 export const NewMessage = ({
@@ -133,9 +137,55 @@ export const NewMessage = ({
   const [inputMessage, setInputMessage] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const sendMessage = useSendMessage({ clientAddress });
+  // null means that we don't know yet
+
+  const peerOnNetwork = useFetchPeerOnNetwork({
+    clientAddress,
+    peerAddress: (() => {
+      if (state.id === "input has address") {
+        return state.peerAddress as EthAddress;
+      } else {
+        return null;
+      }
+    })(),
+  });
+
+  useEffect(() => {
+    if (peerOnNetwork.data === null || peerOnNetwork.data === undefined) {
+      return;
+    } else {
+      setState((prev) => {
+        if (prev.id !== "input has address") {
+          return prev;
+        } else {
+          return {
+            ...prev,
+            addressIsOnNetwork: peerOnNetwork.data,
+          };
+        }
+      });
+    }
+  }, [peerOnNetwork.data, state.id]);
+
+  const { acceptConversations, isAccepted } = useReadWriteValue({
+    clientAddress,
+  });
+
+  const accepted = useMemo(() => {
+    if (state.id !== "input has address") {
+      return null;
+    }
+    return isAccepted({
+      conversation: { peerAddress: state.peerAddress as EthAddress },
+    });
+  }, [isAccepted, state.id]);
+
+  const inputInvalid = useMemo(() => {
+    return inputMessage.length === 0 || inputMessage.trim().length === 0;
+  }, [inputMessage]);
 
   const send = useCallback(async () => {
-    if (state.id !== "input has address") {
+    if (state.id !== "input has address" || inputInvalid) {
       return;
     } else {
       sendMessage.mutate({
@@ -144,9 +194,14 @@ export const NewMessage = ({
         },
         content: inputMessage,
       });
+
+      !accepted &&
+        acceptConversations({
+          conversations: [{ peerAddress: state.peerAddress as EthAddress }],
+        });
       goToDm({ peerAddress: state.peerAddress as EthAddress });
     }
-  }, [goToDm, inputMessage, sendMessage, state.id]);
+  }, [goToDm, inputMessage, sendMessage, state.id, accepted]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -156,14 +211,57 @@ export const NewMessage = ({
     },
     [send]
   );
-
+  const handleSubmit = useCallback(
+    async (e?: { preventDefault: () => void }) => {
+      e && e.preventDefault();
+      if (!isEnsName(inputValue) && !isEthAddress(inputValue)) {
+        setState({ id: "invalid input" });
+        return;
+      } else {
+        if (isEthAddress(inputValue)) {
+          setState({
+            id: "input has address",
+            peerAddress: inputValue,
+            addressIsOnNetwork: null,
+          });
+          return;
+        } else {
+          setState({ id: "loading" });
+          const peerAddress = await fetchAddressFromEns(inputValue);
+          if (peerAddress === null) {
+            setState({ id: "input does not have an address" });
+            return;
+          } else {
+            setState({
+              id: "input has address",
+              peerAddress,
+              addressIsOnNetwork: null,
+            });
+            if (inputRef.current === null) {
+              console.warn("inputRef.current is null");
+            } else {
+              inputRef.current.focus();
+            }
+            return;
+          }
+        }
+      }
+    },
+    [inputValue]
+  );
+  useEffect(() => {
+    if (isEnsName(inputValue)) {
+      handleSubmit();
+    }
+  }, [inputValue, handleSubmit]);
   return (
     <Root
       key="newMessage"
       initial={{ maxHeight: "0" }}
       animate={{ top: "1rem", maxHeight: "99vh" }}
       exit={{ top: "100%" }}
-      transition={{ duration: 0.3 }}>
+      transition={{ duration: 0.3 }}
+    >
       <HeaderWrapper>
         <NewMessageHeader.Root>
           <NewMessageHeader.Title>New Message</NewMessageHeader.Title>
@@ -172,38 +270,12 @@ export const NewMessage = ({
           </NewMessageHeader.Button>
         </NewMessageHeader.Root>
       </HeaderWrapper>
-      <UnstyledForm
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!isEnsName(inputValue) && !isEthAddress(inputValue)) {
-            setState({ id: "invalid input" });
-            return;
-          } else {
-            if (isEthAddress(inputValue)) {
-              setState({ id: "input has address", peerAddress: inputValue });
-              return;
-            } else {
-              setState({ id: "loading" });
-              const peerAddress = await fetchAddressFromEns(inputValue);
-              if (peerAddress === null) {
-                setState({ id: "input does not have an address" });
-                return;
-              } else {
-                setState({ id: "input has address", peerAddress });
-                if (inputRef.current === null) {
-                  console.warn("inputRef.current is null");
-                } else {
-                  inputRef.current.focus();
-                }
-                return;
-              }
-            }
-          }
-        }}>
+      <UnstyledForm onSubmit={handleSubmit}>
         <NewMsgInput.Root
           isError={state.id === "invalid input"}
           onFocus={() => setInputIsFocused(true)}
-          onBlur={() => setInputIsFocused(false)}>
+          onBlur={() => setInputIsFocused(false)}
+        >
           <NewMsgInput.To>To: </NewMsgInput.To>
 
           <NewMsgInput.TextInput
@@ -217,7 +289,8 @@ export const NewMessage = ({
           />
           <NewMsgInput.IconContainer
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => null}>
+            onClick={handleSubmit}
+          >
             {(() => {
               if (state.id === "loading") {
                 return <NewMsgInput.LoaderAnimGeneral />;
@@ -240,17 +313,42 @@ export const NewMessage = ({
             </NoResultSubtitle>
           </NoResultText>
         )}
+        {state.id === "input has address" &&
+          state.addressIsOnNetwork === false && (
+            <NoResultText>
+              <NoResultTitle>
+                {"User hasn't joined the XMTP network."}
+              </NoResultTitle>
+              <NoResultSubtitle>
+                Until they join the network, they cannot receive messages. Learn
+                more{" "}
+                <PurpleLink
+                  href="https://xmtp.org/docs/dev-concepts/account-signatures"
+                  target="_blank"
+                  rel="norefferer"
+                >
+                  here
+                </PurpleLink>
+                .
+              </NoResultSubtitle>
+            </NoResultText>
+          )}
         {state.id === "input has address" && (
           <PushDown>
             <Avatar size="xxxl" handle={inputValue} onClick={() => null} />
-            <p>{truncateAddress(state.peerAddress, 20)}</p>
+            {isEnsName(inputValue) ? (
+              <p>{inputValue}</p>
+            ) : (
+              <p>{truncateAddress(state.peerAddress, 20)}</p>
+            )}
           </PushDown>
         )}
       </Main>
       <MsgBoxWrapper>
         <MsgBox.Root
           onFocus={() => setMessageInputIsFocused(true)}
-          onBlur={() => setMessageInputIsFocused(false)}>
+          onBlur={() => setMessageInputIsFocused(false)}
+        >
           <MsgBox.MessageInput
             disabled={state.id !== "input has address"}
             onKeyDown={handleKeyDown}
@@ -277,7 +375,9 @@ export const NewMessage = ({
                 return <MsgBox.LoaderAnimGeneral />;
               } else {
                 return (
-                  <MsgBox.ArrowUpCircle isActive={messageInputIsFocused} />
+                  <MsgBox.ArrowUpCircle
+                    isActive={messageInputIsFocused && !inputInvalid}
+                  />
                 );
               }
             })()}
@@ -287,3 +387,8 @@ export const NewMessage = ({
     </Root>
   );
 };
+
+const PurpleLink = styled.a`
+  color: ${(props) => props.theme.colors.primary["700"]};
+  font-weight: bold;
+`;

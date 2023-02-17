@@ -22,9 +22,9 @@ import {
   CATEGORIES,
   ProjectCategory,
   isProjectCategory,
+  categoryToDisplay,
 } from "@/lib/supabase/project";
 import * as MenuMobile from "@/design/relay/MenuMobile";
-import Image from "next/image";
 import { ConnectButton } from "@/components/ConnectButton";
 import { NextRouter, useRouter } from "next/router";
 import { ReceiverWindow } from "@/components/ReceiverWindow";
@@ -41,6 +41,7 @@ import { useAnimation } from "framer-motion";
 import { ChatIconBlack } from "@/design/relay/ChatIcon";
 import { CloseIcon } from "@/design/NewMessageHeader";
 import { MobileLogo } from "@/design/MobileLogo";
+import MobileMenuComponent from "@/components/MobileMenuComponent";
 
 const translateXForElement = (element: HTMLDivElement) => {
   const transform = element.style.transform;
@@ -74,25 +75,22 @@ export default function Relay({ projects }: { projects: Project[] }) {
   const [width, setWidth] = useState(0);
   const showcaseRef = useRef<HTMLDivElement>(null);
   const showcaseHeaderRef = useRef<HTMLDivElement>(null);
+
   const [searchInput, setSearchInput] = useState<string | null>(null);
   const [messageInputIsError, setMessageInputIsError] = useState(false);
   const [messageInputIsLoading, setMessageInputIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [showProducts, setShowProducts] = useState(false);
-  const [showCommunity, setShowCommunity] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState<boolean>(false);
-  const toggleProducts = useCallback(() => {
-    setShowProducts(!showProducts);
-    setShowCommunity(false);
-  }, [showProducts]);
+  const [showCommunity, setShowCommunity] = useState(false);
   const toggleCommunity = useCallback(() => {
     setShowCommunity(!showCommunity);
-    setShowProducts(false);
   }, [showCommunity]);
   const toggleMobileSearch = useCallback(() => {
-    console.log({ showMobileSearch });
     setShowMobileSearch(!showMobileSearch);
   }, [showMobileSearch]);
+  const toggleShowMenu = useCallback(() => {
+    setShowMenu(!showMenu);
+  }, [showMenu]);
   const [sidebar, setSidebar] = useState<boolean>(false);
   const [showCaseDragging, setShowCaseDragging] = useState<boolean>(false);
   const showcaseDragStop = useCallback(
@@ -250,22 +248,15 @@ export default function Relay({ projects }: { projects: Project[] }) {
                 }
               }}
             />
-            {showProducts ? (
-              <ProductsDropdown
-                toggleDropdown={toggleProducts}
-                onClickDirectory={scrollToDirectory}
-                onClickReceiver={goToMessages}
-                router={router}
-              />
-            ) : (
-              <Nav.NavLink
-                style={{ marginLeft: "auto", marginRight: "1.5rem" }}
-                onClick={toggleProducts}
-              >
-                Products
-                <Nav.ChevronDownActive />
-              </Nav.NavLink>
-            )}
+            <Nav.NavLink
+              as="a"
+              href="https://airtable.com/shrD6Xv70iq7WDwoj"
+              target="_blank"
+              rel="noreferrer"
+              style={{ marginLeft: "auto", marginRight: "1.5rem" }}
+            >
+              Waitlist
+            </Nav.NavLink>
             {showCommunity ? (
               <CommunityDropdown
                 toggleDropdown={toggleCommunity}
@@ -291,7 +282,7 @@ export default function Relay({ projects }: { projects: Project[] }) {
               <ConnectButton />
             </Nav.LogoAndNameWrapper>
             <Nav.MobileMenuButtonWrapper>
-              <MenuMobile.MenuIcon onClick={() => setShowMenu(true)} />
+              <MenuMobile.MenuIcon onClick={toggleShowMenu} />
             </Nav.MobileMenuButtonWrapper>
           </Nav.RootDesktop>
           <Nav.RootMobile>
@@ -340,7 +331,7 @@ export default function Relay({ projects }: { projects: Project[] }) {
                 <MobileLogo />
                 <MenuMobile.RightWrapper>
                   <ChatIconBlack onClick={toggleMobileSearch} />
-                  <MenuMobile.MenuIcon onClick={() => setShowMenu(true)} />
+                  <MenuMobile.MenuIcon onClick={toggleShowMenu} />
                 </MenuMobile.RightWrapper>
               </>
             )}
@@ -362,7 +353,10 @@ export default function Relay({ projects }: { projects: Project[] }) {
                     dragConstraints={{ right: 0, left: -width }}
                     onDragStart={showCaseDragStart}
                     animate={animation}
-                    transition={{ type: "spring", stiffness: 100 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 40,
+                    }}
                     onDragEnd={showcaseDragStop}
                   >
                     {robotCards.map((robot, i) => (
@@ -474,85 +468,7 @@ export default function Relay({ projects }: { projects: Project[] }) {
           onClickRecon={scrollToDirectory}
           onClickRobot={scrollToShowcaseHeader}
         />
-        {showMenu && (
-          <MenuMobile.Overlay>
-            <MenuMobile.Root initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <FlexRowSpaceBetween style={{ padding: "0.5rem" }}>
-                <MenuMobile.Logo />
-                <Image
-                  onClick={() => {
-                    setShowMenu(false);
-                  }}
-                  src="/exit.svg"
-                  width={24}
-                  height={24}
-                  alt="close"
-                />
-              </FlexRowSpaceBetween>
-              <MenuMobile.Products>Products</MenuMobile.Products>
-              <MenuMobile.ProductButton
-                onClick={() => {
-                  setShowMenu(false);
-                  goToMessages();
-                }}
-              >
-                Receiver
-              </MenuMobile.ProductButton>
-              <MenuMobile.ProductButton
-                onClick={() => {
-                  setShowMenu(false);
-                  scrollToDirectory();
-                }}
-              >
-                Recon
-              </MenuMobile.ProductButton>
-              <MenuMobile.Products>Community</MenuMobile.Products>
-              <MenuMobile.SocialItem
-                as="a"
-                href="https://discord.gg/relaycc"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Discord
-              </MenuMobile.SocialItem>
-              <MenuMobile.SocialItem
-                as="a"
-                href="https://twitter.com/relay_eth"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Twitter
-              </MenuMobile.SocialItem>
-              <MenuMobile.SocialItem
-                as="a"
-                href="https://lenster.xyz/u/relay"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Lens
-              </MenuMobile.SocialItem>
-              <MenuMobile.SocialItem
-                as="a"
-                href="https://mirror.xyz/relaycc.eth"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Mirror
-              </MenuMobile.SocialItem>
-              <MenuMobile.SocialItem
-                as="a"
-                href="https://github.com/relaycc"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub
-              </MenuMobile.SocialItem>
-              <MenuMobile.ConnectButton>
-                Connect Wallet
-              </MenuMobile.ConnectButton>
-            </MenuMobile.Root>
-          </MenuMobile.Overlay>
-        )}
+        {showMenu && <MobileMenuComponent setShowMenu={setShowMenu} />}
         <ReceiverWindow />
         <Sidebar
           {...{ sidebar, setSidebar, activeCategory, setActiveCategory }}
@@ -561,12 +477,6 @@ export default function Relay({ projects }: { projects: Project[] }) {
     </>
   );
 }
-
-const FlexRowSpaceBetween = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-`;
 
 export const getServerSideProps = async (): Promise<{
   props: {
@@ -604,18 +514,18 @@ const DirectoryHeaderItem = ({
 }: {
   isActive: boolean;
   onClick: () => unknown;
-  category: string;
+  category: ProjectCategory;
 }) => {
   if (isActive) {
     return (
       <DirectoryHeader.Active onClick={onClick}>
-        {category}
+        {categoryToDisplay(category)}
       </DirectoryHeader.Active>
     );
   } else {
     return (
       <DirectoryHeader.Inactive onClick={onClick}>
-        {category}
+        {categoryToDisplay(category)}
       </DirectoryHeader.Inactive>
     );
   }
@@ -783,16 +693,16 @@ const FlexWrapRow = styled.div`
 const CommunityRoot = styled.div`
   position: relative;
 `;
-const ProductsRoot = styled.div`
-  position: relative;
-  margin-left: auto;
-  margin-right: 1.5rem;
-`;
-
 const CommunityCard = styled(Nav.DropdownCard)`
   position: absolute;
   left: -17px;
   z-index: 1;
+`;
+
+const ProductsRoot = styled.div`
+  position: relative;
+  margin-left: auto;
+  margin-right: 1.5rem;
 `;
 const ProductsCard = styled(Nav.DropdownCard)`
   position: absolute;

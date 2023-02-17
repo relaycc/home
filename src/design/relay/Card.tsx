@@ -1,19 +1,19 @@
-import { FunctionComponent, ReactNode, useState } from "react";
+import React, { FunctionComponent, ReactNode, useState } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+
 export * from "./RobotIcons";
 
-const Root = styled(motion.div)`
+const Root = styled(motion.div)<{ isMobile?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 352px;
-  min-width: 252px;
-  height: 330px;
+  min-width: ${(p) => (p.isMobile ? "156px" : "330px")};
+  height: ${(p) => (p.isMobile ? "152px" : "330px")};
   cursor: pointer;
   background-color: grey;
-  border-radius: 16px;
+  border-radius: ${(p) => (p.isMobile ? "8px" : "16px")};
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
   position: relative;
 `;
@@ -23,6 +23,7 @@ interface CardProps {
   icon: ReactNode;
   initialBgColor: string;
   animateBgColor: string;
+  isMobile?: boolean;
 }
 
 export const Card: FunctionComponent<CardProps> = ({
@@ -30,9 +31,13 @@ export const Card: FunctionComponent<CardProps> = ({
   icon,
   initialBgColor,
   animateBgColor,
+  isMobile,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const copiedIcon = React.cloneElement(icon, [
+    { height: "82px", width: "82px" },
+  ]);
   return (
     <Root
       onClick={handleClick}
@@ -46,25 +51,15 @@ export const Card: FunctionComponent<CardProps> = ({
             }
           : { backgroundColor: animateBgColor }
       }
+      isMobile={isMobile}
     >
-      {isOpen && (
-        <RobotIcon
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          🤖
-        </RobotIcon>
-      )}
       {icon && icon}
+      {/*<Icon />*/}
     </Root>
   );
 };
 
-const RobotIcon = styled(motion.div)`
-  position: absolute;
-  font-size: 2rem;
-  line-height: 2rem;
-  top: 1rem;
-  right: 1rem;
+const Wrapper = styled.div`
+  height: 81px;
+  width: 81px;
 `;

@@ -5,12 +5,11 @@ import {
   EthAddress,
   useDirectMessage,
 } from "@relaycc/xmtp-hooks";
-import { useRouter } from "next/router";
-import { FunctionComponent, useCallback, useMemo } from "react";
+import { FunctionComponent, useMemo } from "react";
 import * as MessagePreview from "@/design/MessagePreview";
 import { getDisplayDate } from "@/lib/getDisplayDate";
 import { useGoToDm } from "@/hooks/useReceiverWindow";
-import { LoadingText } from "@/design/relay/LoadingText";
+import { RenderMessageContent } from "./RequestsPage";
 
 export const ChatsPreview: FunctionComponent<{
   conversation: Conversation;
@@ -53,17 +52,7 @@ export const ChatsPreview: FunctionComponent<{
             </MessagePreview.ENSName.EnsNameMonofontMd>
           </MessagePreview.NameAndIcons>
           <MessagePreview.MessageDetails>
-            {(() => {
-              if (isLoading) {
-                return <LoadingText />;
-              } else {
-                try {
-                  return `${lastMessage?.content || "..."}`;
-                } catch {
-                  return null;
-                }
-              }
-            })()}
+            <RenderMessageContent isLoading={isLoading} message={lastMessage} />
           </MessagePreview.MessageDetails>
         </MessagePreview.MsgDetails>
       </MessagePreview.Wrapper>

@@ -24,12 +24,18 @@ import { UserDetails } from "@/design/DMHeader";
 import { CloseIcon } from "@/design/CloseIcon";
 import { truncateAddress } from "@/lib/truncateAddress";
 import * as MsgPreview from "@/design/MsgPreview";
-import { textSmallRegular } from "@/design/typography";
+import { textSmallRegular, textMdSemiBold } from "@/design/typography";
 import * as Skeleton from "@/design/Skeleton";
 import { useReceiverWindow } from "@/hooks/useReceiverWindow";
-import { Conversation, useXmtpClient } from "@relaycc/xmtp-hooks";
+import {
+  Conversation,
+  useXmtpClient,
+  useFetchPeerOnNetwork,
+} from "@relaycc/xmtp-hooks";
 import { useAccount } from "wagmi";
 import { AuthMenu } from "./AuthMenu";
+import { LoaderAnimGeneral } from "@/design/MsgBox";
+import { useReadWriteValue } from "@/hooks/useReadWriteValue";
 
 export interface MessagesBucketProps {
   bucket: {
@@ -54,13 +60,38 @@ export const DirectMessagesPage: FunctionComponent<{
   const [showAuthMenu, setShowAuthMenu] = useState(!isSignedIn);
   const [showFailureToast, setShowFailureToast] = useState(false);
   const [inputIsFocused, setInputIsFocused] = useState(false);
+  const [messageIsSending, setMessageIsSending] = useState(false);
+  const [lastMessageId, setLastMessageId] = useState("");
+
   const [msgValue, setMsgValue] = useState<string>("");
   const { page, setPage } = useReceiverWindow();
   const peerAddress = conversation.peerAddress as EthAddress;
   const { messages, sendMessage } = useDirectMessage({
     clientAddress: address as EthAddress,
-    conversation: { peerAddress },
+    conversation,
   });
+  const peerOnNetwork = useFetchPeerOnNetwork({
+    clientAddress: address as EthAddress,
+    peerAddress: conversation.peerAddress,
+  });
+  useEffect(() => {
+    if (!messages?.data) {
+      return;
+    }
+    const newId = messages.data[0]?.id;
+    if (messageIsSending && newId !== lastMessageId) {
+      setMessageIsSending(false);
+    }
+    setLastMessageId(newId);
+  }, [messages, lastMessageId, messageIsSending]);
+
+  const { acceptConversations, isAccepted } = useReadWriteValue({
+    clientAddress: address as EthAddress,
+  });
+
+  const accepted = useMemo(() => {
+    return isAccepted({ conversation: { peerAddress } });
+  }, [isAccepted, peerAddress]);
 
   const relayId = useRelayId({ handle: peerAddress });
   const ensName = useMemo(() => {
@@ -92,18 +123,30 @@ export const DirectMessagesPage: FunctionComponent<{
   const toggleInputIsFocused = useCallback(() => {
     setInputIsFocused(!inputIsFocused);
   }, [inputIsFocused]);
+
+  const msgInvalid = useMemo(() => {
+    return msgValue.length === 0 || msgValue.trim().length === 0;
+  }, [msgValue]);
+  
   const handleSend = useCallback(() => {
+    if (msgInvalid) {
+      return;
+    }
+    setMessageIsSending(true);
     try {
       sendMessage.mutate({
         content: msgValue,
-        conversation: { peerAddress },
+        conversation,
       });
+      !accepted && acceptConversations({ conversations: [conversation] });
     } catch (e) {
       toggleFailureToast();
+      setMessageIsSending(false);
       return;
     }
     setMsgValue("");
-  }, [msgValue, messages]);
+  }, [msgValue, messages, peerAddress, accepted, conversation]);
+
   const messageCount = useMemo(() => messages.data?.length, [messages]);
   const onEnter: KeyboardEventHandler<HTMLInputElement> = useCallback(
     (event) => {
@@ -123,6 +166,7 @@ export const DirectMessagesPage: FunctionComponent<{
   const navigateBack = useCallback(() => {
     setPage({ id: "messages" });
   }, [setPage]);
+
   return (
     <>
       <DMHeader.Root>
@@ -150,15 +194,36 @@ export const DirectMessagesPage: FunctionComponent<{
       </DMHeader.Root>
 
       <ScrollContainer id="chatScroll">
-        {messageCount !== undefined && messageCount < 25 && (
-          <HeadWrapper>
-            <Avatar handle={peerAddress} onClick={() => null} size="xxxl" />
-            <ENSName.EnsNameMd>{ensName}</ENSName.EnsNameMd>
-            <Text>
-              The very beginning of your end-to-end encrypted conversation
-            </Text>
-          </HeadWrapper>
+        {peerOnNetwork.data === false && (
+          <NoResultText>
+            <NoResultTitle>
+              {"User hasn't joined the XMTP network."}
+            </NoResultTitle>
+            <NoResultSubtitle>
+              Until they join the network, they cannot receive messages. Learn
+              more{" "}
+              <PurpleLink
+                href="https://xmtp.org/docs/dev-concepts/account-signatures"
+                target="_blank"
+                rel="norefferer">
+                here
+              </PurpleLink>
+              .
+            </NoResultSubtitle>
+          </NoResultText>
         )}
+        {peerOnNetwork.data !== null &&
+          peerOnNetwork.data !== undefined &&
+          messageCount !== undefined &&
+          messageCount < 25 && (
+            <HeadWrapper>
+              <Avatar handle={peerAddress} onClick={() => null} size="xxxl" />
+              <ENSName.EnsNameMd>{ensName}</ENSName.EnsNameMd>
+              <Text>
+                The very beginning of your end-to-end encrypted conversation
+              </Text>
+            </HeadWrapper>
+          )}
         <MessagesWrapper>
           {messages.isLoading || !messageBuckets ? (
             <>
@@ -189,10 +254,14 @@ export const DirectMessagesPage: FunctionComponent<{
             onBlur={toggleInputIsFocused}
           />
           <MsgBox.IconContainer>
-            <MsgBox.ArrowUpCircle
-              isActive={inputIsFocused}
-              onClick={handleSend}
-            />
+            {messageIsSending ? (
+              <LoaderAnimGeneral />
+            ) : (
+              <MsgBox.ArrowUpCircle
+                isActive={inputIsFocused && !msgInvalid}
+                onClick={handleSend}
+              />
+            )}
           </MsgBox.IconContainer>
         </MsgBox.Root>
       </MsgBoxWrapper>
@@ -201,8 +270,7 @@ export const DirectMessagesPage: FunctionComponent<{
           <Toast.Failure.Card
             initial={{ opacity: 0.2 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-          >
+            transition={{ duration: 0.2 }}>
             <Toast.Failure.AlertIcon />
             <Toast.Failure.Column>
               <Toast.Failure.Title>Failed to Send Message</Toast.Failure.Title>
@@ -239,13 +307,31 @@ const ListMessages: FunctionComponent<
       return handle;
     }
   }, [handle, relayId]);
-  if (peerAddress === bucket.messages[0].senderAddress) {
+
+  const filteredBucket = useMemo(
+    (): {
+      peerAddress: string;
+      messages: Message[];
+    } => ({
+      peerAddress: bucket.peerAddress,
+      messages: bucket.messages.filter(
+        (mes) => typeof mes.content === "string"
+      ),
+    }),
+    [bucket]
+  );
+
+  if (!filteredBucket.messages.length) {
+    return null;
+  }
+
+  if (peerAddress === filteredBucket.messages[0].senderAddress) {
     return (
       <MsgBundles.Root>
         <MsgBundles.FirstMsgContainer>
           <MsgBundles.StatusIconContainer>
             <Avatar
-              handle={[...bucket.messages].reverse()[0].senderAddress}
+              handle={[...filteredBucket.messages].reverse()[0].senderAddress}
               onClick={() => {}}
               size={"md"}
             />
@@ -255,34 +341,34 @@ const ListMessages: FunctionComponent<
               <ENSName.EnsNameMonofontLg>{ensName}</ENSName.EnsNameMonofontLg>
 
               <MsgBundles.Time.Root>
-                {getDisplayDate([...bucket.messages].reverse()[0].sent)}
+                {getDisplayDate([...filteredBucket.messages].reverse()[0].sent)}
               </MsgBundles.Time.Root>
             </MsgBundles.NameAndDate>
             <MsgBundles.MsgContainer>
-              {!bucket.messages ? (
+              {!filteredBucket.messages ? (
                 <MsgPreview.MsgContainer>
                   <MsgPreview.MsgLoading />
                 </MsgPreview.MsgContainer>
               ) : (
                 <MsgPreview.MsgContainer>
-                  {[...bucket.messages].reverse()[0].content as String}
+                  {[...filteredBucket.messages].reverse()[0].content as String}
                 </MsgPreview.MsgContainer>
               )}
             </MsgBundles.MsgContainer>
           </MsgBundles.UserAndMessage>
         </MsgBundles.FirstMsgContainer>
 
-        {[...bucket.messages]
+        {[...filteredBucket.messages]
           .reverse()
           .slice(1)
           .map((i, index) => (
             <MsgBundles.RestOfTheMessages key={index}>
               <MsgBundles.HoveredTimeContainer>
                 <MsgBundles.XxsSizedTime>
-                  {getDisplayDate(i.sent)}
+                  {getDisplayDate(i.sent, true)}
                 </MsgBundles.XxsSizedTime>
               </MsgBundles.HoveredTimeContainer>
-              {!bucket.messages ? (
+              {!filteredBucket.messages ? (
                 <MsgPreview.MsgContainer>
                   <MsgPreview.MsgLoading />
                 </MsgPreview.MsgContainer>
@@ -301,7 +387,7 @@ const ListMessages: FunctionComponent<
       <MsgBundles.FirstMsgContainer>
         <MsgBundles.StatusIconContainer>
           <Avatar
-            handle={[...bucket.messages].reverse()[0].senderAddress}
+            handle={[...filteredBucket.messages].reverse()[0].senderAddress}
             onClick={() => {}}
             size={"md"}
           />
@@ -313,34 +399,34 @@ const ListMessages: FunctionComponent<
             </ENSName.EnsNameMonofontLgColored>
 
             <MsgBundles.Time.Root>
-              {getDisplayDate([...bucket.messages].reverse()[0].sent)}
+              {getDisplayDate([...filteredBucket.messages].reverse()[0].sent)}
             </MsgBundles.Time.Root>
           </MsgBundles.NameAndDate>
           <MsgBundles.MsgContainer>
-            {!bucket.messages ? (
+            {!filteredBucket.messages ? (
               <MsgPreview.MsgContainer>
                 <MsgPreview.MsgLoading />
               </MsgPreview.MsgContainer>
             ) : (
               <MsgPreview.MsgContainer>
-                {[...bucket.messages].reverse()[0].content as String}
+                {[...filteredBucket.messages].reverse()[0].content as String}
               </MsgPreview.MsgContainer>
             )}
           </MsgBundles.MsgContainer>
         </MsgBundles.UserAndMessage>
       </MsgBundles.FirstMsgContainer>
 
-      {[...bucket.messages]
+      {[...filteredBucket.messages]
         .reverse()
         .slice(1)
         .map((i, index) => (
           <MsgBundles.RestOfTheMessages key={index}>
             <MsgBundles.HoveredTimeContainer>
               <MsgBundles.XxsSizedTime>
-                {getDisplayDate(i.sent)}
+                {getDisplayDate(i.sent, true)}
               </MsgBundles.XxsSizedTime>
             </MsgBundles.HoveredTimeContainer>
-            {!bucket.messages ? (
+            {!filteredBucket.messages ? (
               <MsgPreview.MsgContainer>
                 <MsgPreview.MsgLoading />
               </MsgPreview.MsgContainer>
@@ -462,4 +548,33 @@ const PinWrapper = styled.div`
   display: flex;
   height: 100%;
   align-items: center;
+`;
+
+const NoResultText = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  row-gap: 4px;
+
+  margin-top: 3.125rem;
+  width: 17.563rem;
+  height: 3rem;
+`;
+
+const NoResultTitle = styled.div`
+  ${textMdSemiBold};
+  color: ${(p) => p.theme.colors.gray["900"]};
+  text-align: center;
+`;
+
+const NoResultSubtitle = styled.div`
+  ${textSmallRegular};
+  color: ${(p) => p.theme.colors.gray["400"]};
+  text-align: center;
+`;
+
+const PurpleLink = styled.a`
+  color: ${(props) => props.theme.colors.primary["700"]};
+  font-weight: bold;
 `;

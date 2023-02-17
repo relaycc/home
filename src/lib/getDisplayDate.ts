@@ -1,7 +1,7 @@
-export const getDisplayDate = (date: Date): string => {
+export const getDisplayDate = (date: Date, onlyClockTime?: boolean): string => {
   const time = date.getTime();
   const midnight = new Date().setHours(0, 0, 0);
-  if (time > midnight) {
+  if (time > midnight || onlyClockTime) {
     return date.toLocaleString("en-US", { timeStyle: "short" });
   } else if (time > midnight - 24 * 60 * 60 * 1000) {
     return "Yesterday";

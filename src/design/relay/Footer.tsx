@@ -182,11 +182,23 @@ export default function Footer({
             <FooterLink href="https://xmtp.org/docs/dev-concepts/introduction">
               XMTP
             </FooterLink>
-            <FooterLink>Docs</FooterLink>
+            <FooterLink
+              href="https://docs.relay.cc/about"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Docs
+            </FooterLink>
           </LinkColumnResources>
           <LinkColumnAbout>
             <LinkTitle>About</LinkTitle>
-            <FooterLink>Careers</FooterLink>
+            <FooterLink
+              href="https://jobs.lever.co/relay"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Careers
+            </FooterLink>
           </LinkColumnAbout>
           <LinkColumnCommunity>
             <LinkTitleCommunity>Join the Community</LinkTitleCommunity>

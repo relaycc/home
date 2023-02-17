@@ -1,9 +1,12 @@
 import styled from "styled-components";
-
-export * from "@/design/relay/Logo";
-import * as ButtonPrimary from "@/design/relay/ButtonPrimary";
 import { motion } from "framer-motion";
 import { ComponentProps } from "react";
+import {
+  ButtonPrimaryMd,
+  ButtonSecondaryMd,
+} from "@/design/robot/RobotButtonView";
+
+export * from "@/design/relay/Logo";
 
 export const Overlay = styled.div`
   position: fixed;
@@ -13,17 +16,21 @@ export const Overlay = styled.div`
   height: 100vh;
   padding: 0.5rem;
   display: flex;
+  z-index: 2;
 `;
 
-export const Root = styled(motion.div)`
+export const Root = styled(motion.div)<{ height?: number }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   flex-grow: 1;
-  background: #efeefb;
-  border: 1px solid #d0d5dd;
+  background: ${(p) => p.theme.colors.gray["800"]};
+  //background: #475467;
+  border: 1px solid ${(p) => p.theme.colors.gray["600"]};
   border-radius: 8px;
   padding: 1rem;
+  overflow-y: auto;
+  height: ${(props) => (props.height ? `${props.height}px` : "")};
 `;
 
 export const Products = styled.h6`
@@ -50,42 +57,33 @@ export const SocialItem = styled.div`
   font-weight: 500;
   font-size: 16px;
   line-height: 22px;
-  color: ${(p) => p.theme.colors.gray["900"]};
+  color: ${(p) => p.theme.colors.gray["200"]};
   cursor: pointer;
   padding: 8px;
   height: 2.375rem;
 `;
 
-export const ConnectButton = styled(ButtonPrimary.ButtonPrimary)`
+export const ConnectButton = styled.div`
   margin-top: auto;
   width: 100%;
 `;
-
+export const ButtonWrapper = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  max-height: 6rem;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
 /* ***************************************************************************
  *
  * Prduct Buttons
  *
  * **************************************************************************/
 
-export const ProductButton = styled.button`
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  font-size: 16px;
-  padding: 13px 0px;
-  border: none;
-  cursor: pointer;
-  background: ${(p) => p.theme.colors.primary[100]};
-  color: ${(p) => p.theme.colors.primary[500]};
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-
-  :hover {
-    background-color: ${(p) => p.theme.colors.primary[300]};
-  }
-`;
+export const ProductButton = styled(ButtonPrimaryMd)``;
+export const TryRobotButton = styled(ButtonSecondaryMd)``;
 
 export const MenuIcon = styled((props: ComponentProps<"svg">) => (
   <svg width="20" height="14" viewBox="0 0 20 14" {...props} cursor={"pointer"}>
@@ -97,5 +95,5 @@ export const MenuIcon = styled((props: ComponentProps<"svg">) => (
     />
   </svg>
 ))`
-  stroke: ${(p) => p.theme.colors.gray[900]};
+  stroke: ${(p) => (p.stroke ? p.stroke : p.theme.colors.gray[900])};
 `;

@@ -10,6 +10,7 @@ export const receiverTheme: DefaultTheme = {
   },
   colors: {
     gray: {
+      0: "#FFFFFF",
       25: "#FCFCFD",
       50: "#F9FAFB",
       100: "#F2F4F7",

@@ -7,7 +7,6 @@ export const Root = styled.div`
   color: ${receiverTheme.colors.gray["400"]};
   letter-spacing: 0.03em;
   display: flex;
-  width: 100%;
-
   height: 0.75rem;
+  margin-left: auto;
 `;

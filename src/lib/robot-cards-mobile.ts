@@ -1,4 +1,4 @@
-import * as Card from "@/design/relay/Card";
+import * as Card from "@//design/robot/RobotMobileIcons";
 
 export interface Robot {
   peerAddress: string;
@@ -7,7 +7,7 @@ export interface Robot {
   animateBgColor: string;
 }
 
-export const ROBOT_CARDS: Record<string, Robot> = {
+export const ROBOT_MOBILE_CARDS: Record<string, Robot> = {
   uniswap: {
     peerAddress: "0x59690cA7049125975FF957ED711875de47E0C716",
     icon: Card.Uniswap,

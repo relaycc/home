@@ -23,6 +23,7 @@ import { ButtonPrimaryXl, ButtonSecondaryXl } from "@/design/ButtonView";
 import {
   Conversation,
   EthAddress,
+  Message,
   useConversations,
   useDirectMessage,
 } from "@relaycc/xmtp-hooks";
@@ -33,6 +34,7 @@ import { getDisplayDate } from "@/lib/getDisplayDate";
 import { Loading } from "./MessagesPage";
 import { useGoToMessages } from "@/hooks/useReceiverWindow";
 import { useAccount } from "wagmi";
+import { LoadingText } from "@/design/relay/LoadingText";
 
 export const RequestsPage: FunctionComponent<{}> = () => {
   const goToMessages = useGoToMessages();
@@ -121,8 +123,7 @@ export const RequestsPage: FunctionComponent<{}> = () => {
             initial={{ maxHeight: "0" }}
             animate={{ top: "1rem", maxHeight: "32rem" }}
             exit={{ top: "100%" }}
-            transition={{ duration: 0.3 }}
-          >
+            transition={{ duration: 0.3 }}>
             {requestsLoading ? (
               <>
                 <Loading />
@@ -223,7 +224,7 @@ const RequestedChat: FunctionComponent<{
             </MessagePreview.ENSName.EnsNameMonofontMd>
           </MessagePreview.NameAndIcons>
           <MessagePreview.MessageDetails>
-            {`${lastMessage?.content}`}
+            <RenderMessageContent isLoading={isLoading} message={lastMessage} />
           </MessagePreview.MessageDetails>
         </MessagePreview.MsgDetails>
       </MessagePreview.Wrapper>
@@ -232,6 +233,21 @@ const RequestedChat: FunctionComponent<{
       </MessagePreview.StyledTime>
     </MessagePreview.Root>
   );
+};
+
+export const RenderMessageContent: FunctionComponent<{
+  isLoading: boolean;
+  message?: Message;
+}> = ({ isLoading, message }) => {
+  if (isLoading) {
+    return <LoadingText />;
+  }
+
+  if (!message || typeof message?.content !== "string") {
+    return null;
+  }
+
+  return <>{`${message?.content || "..."}`}</>;
 };
 
 const IgnoredChat: FunctionComponent<{
@@ -252,7 +268,7 @@ const IgnoredChat: FunctionComponent<{
       return;
     }
     handleUnignore({ conversation });
-  }, [conversation]);
+  }, [conversation, handleUnignore]);
 
   const lastMessage = data?.[0];
 
@@ -276,7 +292,7 @@ const IgnoredChat: FunctionComponent<{
           <InfoToastIcon />
         </IgnoredIconContainer>
         <MessagePreview.Avatar
-          handle={"peerAddress"}
+          handle={conversation.peerAddress}
           onClick={() => null}
           size="md"
         />
@@ -287,12 +303,14 @@ const IgnoredChat: FunctionComponent<{
             </MessagePreview.ENSName.EnsNameMonofontMd>
           </MessagePreview.NameAndIcons>
           <MessagePreview.MessageDetails>
-            {lastMessage?.content as string}
+            <RenderMessageContent isLoading={isLoading} message={lastMessage} />
           </MessagePreview.MessageDetails>
         </MessagePreview.MsgDetails>
       </MessagePreview.Wrapper>
       <MessagePreview.StyledTime>
-        <Time.Root>{getDisplayDate(lastMessage?.sent as Date)} </Time.Root>
+        <Time.Root>
+          {lastMessage && getDisplayDate(lastMessage?.sent as Date)}{" "}
+        </Time.Root>
       </MessagePreview.StyledTime>
     </Request.Root>
   );
@@ -306,8 +324,7 @@ const FailToast: FunctionComponent<{
       <Toast.Failure.Card
         initial={{ opacity: 0.2 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.2 }}
-      >
+        transition={{ duration: 0.2 }}>
         <Toast.Failure.AlertIcon />
         <Toast.Failure.Column>
           <Toast.Failure.Title>
