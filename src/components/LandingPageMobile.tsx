@@ -80,7 +80,23 @@ const RelayLanding: FunctionComponent = () => {
             </RobotTitle>
             {/*<Ellipse />*/}
           </MobileTitelWrapper>
-          <Wrapper>
+          <Wrapper
+            animate={{
+              height: showMore ? "100%" : "15rem",
+              transition: {
+                type: "tween",
+                duration: 0.5,
+                ease: "circOut",
+              },
+            }}
+            exit={{
+              transition: {
+                type: "tween",
+                duration: 0.5,
+                ease: "circIn",
+              },
+            }}
+          >
             <CardGrid height={showMore ? "100%" : "15rem"}>
               {robotCards.map((robot, i) => (
                 <Card.Card
@@ -115,7 +131,7 @@ const RelayLanding: FunctionComponent = () => {
     </Root>
   );
 };
-const Wrapper = styled.div`
+const Wrapper = styled(motion.div)`
   max-height: fit-content;
   align-items: center;
   width: 100%;
@@ -164,7 +180,7 @@ const ShowMoreWrapper = styled.div<{ showMore: boolean }>`
   align-items: center;
   justify-content: flex-end;
   flex-direction: column;
-  bottom: ${(p) => (p.showMore ? "" : "4.5rem")};
+  bottom: ${(p) => (p.showMore ? "" : "2.5rem")};
   left: 0px;
   margin-top: ${(p) => (p.showMore ? "1rem" : "")};
 
