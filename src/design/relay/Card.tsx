@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { fetchEnsName } from "@/hooks/useEnsName";
 
 export * from "./RobotIcons";
@@ -144,13 +143,7 @@ export const Card: FunctionComponent<CardProps> = ({
             }
             black={textBlack}
           >
-            Message the
-            <Image
-              src={"/robot.jpeg"}
-              alt={"robotHead"}
-              width={16}
-              height={16}
-            />
+            Message the 🤖
             <br />
             for {ensName}
           </Text>
