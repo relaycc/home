@@ -78,7 +78,6 @@ const RelayLanding: FunctionComponent = () => {
               Click on your favorite dApp to start a <br />
               conversation
             </RobotTitle>
-            {/*<Ellipse />*/}
           </MobileTitelWrapper>
           <Wrapper
             animate={{
@@ -107,6 +106,7 @@ const RelayLanding: FunctionComponent = () => {
                   icon={<robot.icon width={82} />}
                   initialBgColor={robot.initialBgColor}
                   animateBgColor={robot.animateBgColor}
+                  peerAddress={robot.peerAddress}
                   isMobile={true}
                 />
               ))}

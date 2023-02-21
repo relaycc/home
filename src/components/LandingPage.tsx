@@ -37,7 +37,6 @@ const LandingPage: FunctionComponent = () => {
     setShowMenu(!showMenu);
   }, [showMenu]);
   const robotCards = usePriorityRobotCards();
-
   return (
     <Root>
       <Head>
@@ -109,6 +108,7 @@ const LandingPage: FunctionComponent = () => {
                 icon={<robot.icon />}
                 initialBgColor={robot.initialBgColor}
                 animateBgColor={robot.animateBgColor}
+                peerAddress={robot.peerAddress}
               />
             ))}
           </CardGrid>

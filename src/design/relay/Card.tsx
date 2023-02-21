@@ -1,7 +1,14 @@
-import React, { FunctionComponent, ReactNode, useState } from "react";
+import React, {
+  FunctionComponent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { fetchEnsName } from "@/hooks/useEnsName";
 
 export * from "./RobotIcons";
 
@@ -23,6 +30,7 @@ interface CardProps {
   icon: ReactNode;
   initialBgColor: string;
   animateBgColor: string;
+  peerAddress: string;
   isMobile?: boolean;
 }
 
@@ -32,12 +40,62 @@ export const Card: FunctionComponent<CardProps> = ({
   initialBgColor,
   animateBgColor,
   isMobile,
+  peerAddress,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [ensName, setEnsName] = useState("");
+  const [textBlack, setTextBlack] = useState(false);
+
   const copiedIcon = React.cloneElement(icon, [
     { height: "82px", width: "82px" },
   ]);
+  const name = useMemo(async () => {
+    return await fetchEnsName(peerAddress).then((res) => {
+      if (typeof res !== "string") return;
+      const name = res.substring(0, res.indexOf("."));
+      console.log(name);
+      switch (name) {
+        case "poap":
+          setEnsName("POAP");
+          return;
+        case "ens":
+          setEnsName("ENS");
+          return;
+        case "opensea":
+          setEnsName("OpenSea");
+          return;
+        case "makerdao":
+          setEnsName("MakerDAO");
+          return;
+        case "xmtp":
+          setEnsName("XMTP");
+          return;
+        case "zksync":
+          setEnsName("xkSync");
+          return;
+        case "walletconnect":
+          setEnsName("WalletConnect");
+          return;
+        case "sushi":
+          setEnsName("SushiSwap");
+          return;
+        case "lit":
+          setTextBlack(true);
+          break;
+        case "gitcoin":
+          setTextBlack(true);
+          break;
+        case "lens":
+          setTextBlack(true);
+          break;
+        default:
+          setEnsName(name.charAt(0).toUpperCase() + name.slice(1));
+      }
+    });
+  }, [peerAddress]);
+  useEffect(() => console.log(name), [name]);
+
   return (
     <Root
       onClick={handleClick}
@@ -55,6 +113,10 @@ export const Card: FunctionComponent<CardProps> = ({
               background: `radial-gradient(circle at center,${initialBgColor} 0%,${initialBgColor} 99%,${animateBgColor} 100%)`,
             }
       }
+      transition={{
+        duration: 0.4,
+        delay: 0,
+      }}
       isMobile={isMobile}
     >
       {icon && (
@@ -80,6 +142,7 @@ export const Card: FunctionComponent<CardProps> = ({
                   }
                 : { opacity: "0%" }
             }
+            black={textBlack}
           >
             Message the
             <Image
@@ -89,7 +152,7 @@ export const Card: FunctionComponent<CardProps> = ({
               height={16}
             />
             <br />
-            for Alchemy
+            for {ensName}
           </Text>
         </Wrapper>
       )}
@@ -105,9 +168,12 @@ const Wrapper = styled.div`
   height: 100%;
 `;
 
-const Text = styled(motion.div)`
+const Text = styled(motion.div)<{ black: boolean }>`
   position: absolute;
   bottom: 2rem;
   left: 124px;
   text-align: center;
+  color: ${(p) =>
+    p.black ? p.theme.colors.gray["900"] : p.theme.colors.gray["0"]};
+  font-weight: 700;
 `;
