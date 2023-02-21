@@ -18,6 +18,7 @@ import { DropdownItem } from "@/design/relay/DropdownItem";
 import styled from "styled-components";
 import { IconGithub } from "@/design/relay/IconGithub";
 import { RobotHead } from "@/design/robot/RobotHead";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Root = styled.div`
   font-family: "Satoshi-Regular";
@@ -26,6 +27,7 @@ const Root = styled.div`
     display: none;
   }
 `;
+
 const LandingPage: FunctionComponent = () => {
   const router = useRouter();
   const [showCommunity, setShowCommunity] = useState(false);
@@ -36,6 +38,40 @@ const LandingPage: FunctionComponent = () => {
   const toggleShowMenu = useCallback(() => {
     setShowMenu(!showMenu);
   }, [showMenu]);
+  const [carouselPosition, setCarouselPosition] = useState<number>(0);
+  const nextPos = useCallback(
+    () =>
+      carouselPosition === 4
+        ? setCarouselPosition(0)
+        : setCarouselPosition(carouselPosition + 1),
+    [carouselPosition]
+  );
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextPos();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [nextPos]);
+  const variants = {
+    enter: (direction: number) => {
+      return {
+        x: direction > 0 ? 1000 : -1000,
+        opacity: 0,
+      };
+    },
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => {
+      return {
+        zIndex: 0,
+        x: direction < 0 ? 1000 : -1000,
+        opacity: 0,
+      };
+    },
+  };
   const robotCards = usePriorityRobotCards();
   return (
     <Root>
@@ -77,7 +113,18 @@ const LandingPage: FunctionComponent = () => {
 
           <MobileTitelWrapper>
             <TitleWhite>Web3 Agent for</TitleWhite>
-            <TitleGradient>User Onboarding</TitleGradient>
+            <AnimatePresence exitBeforeEnter>
+              <TitleGradient
+                key={Tabs[carouselPosition]}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                onClick={nextPos}
+              >
+                {Tabs[carouselPosition]}
+              </TitleGradient>
+            </AnimatePresence>
 
             <SubTitle>Train your own Ethereum-enabled ChatGPT bot</SubTitle>
 
@@ -189,6 +236,14 @@ const CommunityDropdown: FunctionComponent<{
   );
 };
 
+const Tabs = [
+  "Customer Support",
+  "Solidity Integrations",
+  "User Onboarding",
+  "DeFi Education",
+  "Developer Relations",
+];
+
 const HeadWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -276,21 +331,22 @@ const TitleWhite = styled.div`
   font-size: 72px;
   color: #ffffff;
 `;
-const TitleGradient = styled.div`
+const TitleGradient = styled(motion.div)`
   font-style: normal;
   font-weight: 900;
   font-size: 72px;
-  padding: 0rem 1.5rem;
+  //padding: 0rem 1.5rem;
   margin-top: 0.75rem;
+  height: fit-content;
 
-  background-image: linear-gradient(
+  background: linear-gradient(
     89.58deg,
-    #a979e9 2.36%,
-    #849dfd 15.63%,
-    #73b9ff 28.9%,
-    #85cff8 42.16%,
-    #ade1f0 55.43%,
-    #dbeff0 68.69%
+    #a979e9 7.36%,
+    #849dfd 25.63%,
+    #73b9ff 38.9%,
+    #85cff8 62.16%,
+    #ade1f0 85.43%,
+    #dbeff0 98.69%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
